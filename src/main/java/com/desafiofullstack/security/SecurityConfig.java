@@ -49,7 +49,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // Domínios permitidos (ex: frontend)
+        configuration.setAllowedOrigins(List.of("http://localhost:4200")); // Domínios permitidos (ex: frontend)
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Métodos permitidos
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type")); // Headers permitidos
         configuration.setAllowCredentials(true); // Permitir envio de credenciais (cookies, headers)
@@ -58,21 +58,6 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration); // Aplica a configuração para todos os endpoints
         return source;
     }
-
-   /* @Bean
-    public UserDetailsService users() {
-        UserDetails admin = User.builder()
-                .username("admin")
-                .password(passwordEncoder().encode("admin123"))
-                .roles("ADMIN")
-                .build();
-        UserDetails user = User.builder()
-                .username("user")
-                .password(passwordEncoder().encode("user123"))
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(admin, user);
-    }*/
 
     @Bean
     public UserDetailsService userDetailsService() {
