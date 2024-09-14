@@ -8,10 +8,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping("/api/usuarios")
 public class UsuarioController {
 
     @Autowired
@@ -19,7 +20,12 @@ public class UsuarioController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Usuario> criarUsuario(@RequestBody Usuario usuario) {
+    public ResponseEntity<Usuario> criarUsuario(@RequestBody Usuario usuario, Authentication authentication) {
+
+        if (!authentication.getName().equals(usuario.getEmail()) && !authentication.getAuthorities().contains("ROLE_ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         Usuario novoUsuario = usuarioService.criarUsuario(usuario);
         return ResponseEntity.status(HttpStatus.CREATED).body(novoUsuario);
     }
@@ -29,9 +35,8 @@ public class UsuarioController {
     public ResponseEntity<Usuario> obterUsuario(@PathVariable Long id, Authentication authentication) {
         Usuario usuario = usuarioService.obterUsuario(id)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
-
-        // Garantir que o usuário comum só pode acessar seu próprio perfil
-        if (!authentication.getName().equals(usuario.getEmail()) && !authentication.getAuthorities().contains("ROLE_ADMIN")) {
+        SimpleGrantedAuthority sg = new SimpleGrantedAuthority("ROLE_ADMIN");
+        if (!authentication.getName().equals(usuario.getEmail()) && !authentication.getAuthorities().contains(sg)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -44,7 +49,6 @@ public class UsuarioController {
         Usuario usuario = usuarioService.obterUsuario(id)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
-        // Garantir que o usuário comum só pode atualizar seu próprio perfil (exceto o perfil em si)
         if (!authentication.getName().equals(usuario.getEmail()) && !authentication.getAuthorities().contains("ROLE_ADMIN")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }

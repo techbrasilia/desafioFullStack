@@ -2,11 +2,16 @@ package com.desafiofullstack.security;
 
 
 import com.desafiofullstack.repository.UsuarioRepository;
+import com.desafiofullstack.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -25,25 +30,36 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfig {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private AuthService authService;
+
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private UsuarioRepository usuarioRepository;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(withDefaults())  // Habilita CORS usando as configurações definidas no bean corsConfigurationSource
-                .csrf(csrf -> csrf.disable())       // Desativa CSRF para simplificar testes de API (ajuste conforme necessário)
-                .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests
-                                .requestMatchers("/usuarios/**").hasAnyRole("USER", "ADMIN")
-                                .requestMatchers("/perfis/**").hasRole("ADMIN")
-                                .anyRequest().authenticated()
+                .cors(withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)  // Desativa CSRF para APIs RESTful
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/api/usuarios/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/perfis/**").hasRole("ADMIN")
+                        .requestMatchers("/api/auth/**").permitAll()  // Permite acesso sem autenticação para as rotas de autenticação
+                        .anyRequest().authenticated()  // Exige autenticação para qualquer outra rota
                 )
-                .formLogin(withDefaults())  // Mantém a configuração padrão de login
-                .logout(logout -> logout.permitAll());  // Permite logout para todos os usuários
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)  // Cria sessão se necessário
+                )
+                .httpBasic(withDefaults());
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(authService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
     }
 
     @Bean

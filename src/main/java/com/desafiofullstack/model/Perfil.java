@@ -13,7 +13,7 @@ public class Perfil {
 
     private String nome;
 
-    @OneToMany(mappedBy = "perfil")
+    @OneToMany
     private List<Usuario> usuarios;
 
     public Long getId() {

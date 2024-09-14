@@ -10,7 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/perfis")
+@RequestMapping("/api/perfis")
 public class PerfilController {
 
     @Autowired
