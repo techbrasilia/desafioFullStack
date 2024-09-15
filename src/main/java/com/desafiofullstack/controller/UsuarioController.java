@@ -21,8 +21,8 @@ public class UsuarioController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Usuario> criarUsuario(@RequestBody Usuario usuario, Authentication authentication) {
-
-        if (!authentication.getName().equals(usuario.getEmail()) && !authentication.getAuthorities().contains("ROLE_ADMIN")) {
+        SimpleGrantedAuthority sg = new SimpleGrantedAuthority("ROLE_ADMIN");
+        if (!authentication.getAuthorities().contains(sg)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -30,10 +30,29 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(novoUsuario);
     }
 
-    @GetMapping("/{id}")
+    /*@GetMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> obterUsuario(@PathVariable Long id, Authentication authentication) {
         Usuario usuario = usuarioService.obterUsuario(id).orElse(null);
+
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new EntityNotFoundException("Usuário não encontrado").getMessage());
+        }
+
+        SimpleGrantedAuthority sg = new SimpleGrantedAuthority("ROLE_ADMIN");
+
+        if (!authentication.getName().equals(usuario.getEmail()) && !authentication.getAuthorities().contains(sg)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        return ResponseEntity.ok(usuario);
+    }*/
+
+    @GetMapping("/{email}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> obterUsuarioPorEmail(@PathVariable String email, Authentication authentication) {
+        Usuario usuario = usuarioService.obterUsuarioPorEmail(email).orElse(null);
 
         if (usuario == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
