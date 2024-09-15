@@ -32,10 +32,16 @@ public class UsuarioController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Usuario> obterUsuario(@PathVariable Long id, Authentication authentication) {
-        Usuario usuario = usuarioService.obterUsuario(id)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+    public ResponseEntity<?> obterUsuario(@PathVariable Long id, Authentication authentication) {
+        Usuario usuario = usuarioService.obterUsuario(id).orElse(null);
+
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new EntityNotFoundException("Usuário não encontrado").getMessage());
+        }
+
         SimpleGrantedAuthority sg = new SimpleGrantedAuthority("ROLE_ADMIN");
+
         if (!authentication.getName().equals(usuario.getEmail()) && !authentication.getAuthorities().contains(sg)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -45,13 +51,20 @@ public class UsuarioController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Usuario> atualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuarioAtualizado, Authentication authentication) {
-        Usuario usuario = usuarioService.obterUsuario(id)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+    public ResponseEntity<?> atualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuarioAtualizado, Authentication authentication) {
+        Usuario usuario = usuarioService.obterUsuario(id).orElse(null);
 
-        if (!authentication.getName().equals(usuario.getEmail()) && !authentication.getAuthorities().contains("ROLE_ADMIN")) {
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new EntityNotFoundException("Usuário não encontrado").getMessage());
+        }
+
+        SimpleGrantedAuthority sg = new SimpleGrantedAuthority("ROLE_ADMIN");
+
+        if (!authentication.getName().equals(usuario.getEmail()) && !authentication.getAuthorities().contains(sg)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+
 
         usuario.setNome(usuarioAtualizado.getNome());
         usuario.setEmail(usuarioAtualizado.getEmail());
