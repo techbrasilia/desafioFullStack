@@ -30,6 +30,7 @@ Requisitos do desafio:
    3. Alterar authorization de Basic para Bearer utilizando JWT.
    4. Adicionar mais funcionalidades ao sistema.
    5. Criar um componente de cabeçalho e remover metodos repetidos (reutilização)
+   6. Usar css para formatar aparência (angular/material já adicionado como dependencia)
 
 Instruções (Backend):
 
@@ -38,6 +39,9 @@ Instruções (Backend):
   3. Ter instalado o jdk 17 ou utilizar o intellij (sugestao), para rodar o codigo configurando o projeto para java 17, mavem (Bundled (Maven 3) versao 3.9.8)
   4. Acessar um terminal para rodar a imagem atraves do arquivo docker-composer executando o comando "docker-compose up" (precisa estar no diretorio raiz do projeto)
   5. Executar (subir) a aplicacao backend
+     - Ao subir, o spring cria dois usuários para teste:
+       - Nome: admin, email: admin@admin.com e senha: admin123 [************]
+       - Nome: user, email: user@user.com e senha: user123 [************]
   6. Caso queira utilizar uma IDE (cliente) para gerenciar o banco de dados pode utilizar o dbeaver, sqldeveloper ou outro de sua preferencia.
   7. A API normalmente roda no endereco: http://localhost:8080. Caso queira testar a API no Postman siga os passos abaixo:
   - Login: http://localhost:8080/api/auth/login - Utilizar POST
